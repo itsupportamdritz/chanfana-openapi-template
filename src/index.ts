@@ -1,23 +1,20 @@
-import loadingHtml from "./loading.html?raw";
 import { ApiException, fromHono } from "chanfana";
 import { Hono } from "hono";
 import { tasksRouter } from "./endpoints/tasks/router";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { DummyEndpoint } from "./endpoints/dummyEndpoint";
-
-// 👇 This imports the raw HTML file as a string
-import loadingHtml from "./loading.html?raw";
+import loadingHtml from "./loading.html?raw"; // ✅ This line is essential
 
 const app = new Hono<{ Bindings: Env }>();
 
-// ✅ Serve loading.html when visiting "/"
+// ✅ Serve loading.html at root
 app.get("/", (c) => {
   return c.html(loadingHtml);
 });
 
-// 🔧 Optional: Move Swagger UI to "/docs" instead of root
+// ✅ Move Swagger UI to /docs so it doesn't conflict
 const openapi = fromHono(app, {
-  docs_url: "/docs", // 👈 change from "/" to "/docs"
+  docs_url: "/docs",
   schema: {
     info: {
       title: "My Awesome API",
@@ -27,7 +24,7 @@ const openapi = fromHono(app, {
   },
 });
 
-// Register your existing routes
+// Register routes
 openapi.route("/tasks", tasksRouter);
 openapi.post("/dummy/:slug", DummyEndpoint);
 

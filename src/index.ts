@@ -1,3 +1,4 @@
+import loadingHtml from "./loading.html?raw";
 import { ApiException, fromHono } from "chanfana";
 import { Hono } from "hono";
 import { tasksRouter } from "./endpoints/tasks/router";

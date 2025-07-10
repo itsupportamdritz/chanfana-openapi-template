@@ -4,33 +4,39 @@ import { tasksRouter } from "./endpoints/tasks/router";
 import { ContentfulStatusCode } from "hono/utils/http-status";
 import { DummyEndpoint } from "./endpoints/dummyEndpoint";
 
-// Start a Hono app
+// Import static HTML
+import loadingHtml from "./loading.html?raw"; // use ?raw to import as string (Vite or ESBuild)
+
 const app = new Hono<{ Bindings: Env }>();
 
+// 🔹 Serve loading.html at root
+app.get("/", (c) => {
+  return c.html(loadingHtml);
+});
+
+// Error handler
 app.onError((err, c) => {
   if (err instanceof ApiException) {
-    // If it's a Chanfana ApiException, let Chanfana handle the response
     return c.json(
       { success: false, errors: err.buildResponse() },
-      err.status as ContentfulStatusCode,
+      err.status as ContentfulStatusCode
     );
   }
 
-  console.error("Global error handler caught:", err); // Log the error if it's not known
+  console.error("Global error handler caught:", err);
 
-  // For other errors, return a generic 500 response
   return c.json(
     {
       success: false,
       errors: [{ code: 7000, message: "Internal Server Error" }],
     },
-    500,
+    500
   );
 });
 
-// Setup OpenAPI registry
+// 🔹 Setup OpenAPI docs at another route (optional)
 const openapi = fromHono(app, {
-  docs_url: "/",
+  docs_url: "/docs", // move OpenAPI UI here
   schema: {
     info: {
       title: "My Awesome API",
@@ -40,11 +46,8 @@ const openapi = fromHono(app, {
   },
 });
 
-// Register Tasks Sub router
+// Register routes
 openapi.route("/tasks", tasksRouter);
-
-// Register other endpoints
 openapi.post("/dummy/:slug", DummyEndpoint);
 
-// Export the Hono app
 export default app;
